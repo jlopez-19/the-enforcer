@@ -45,9 +45,8 @@ async def on_message_edit(before, after):
         return
     log_channel = discord.utils.get(before.guild.text_channels, name="mod-logs")
     if log_channel:
-        await log_channel.send(f"✏️ **Message edited in {before.channel.mention}** by {before.author.mention}:
-**Before:** {before.content}
-**After:** {after.content}")
+        await log_channel.send(f"✏️ **Message edited in {before.channel.mention}** by {before.author.mention}:\n"
+                               f"**Before:** {before.content}\n**After:** {after.content}")"
 
 # Load cogs
 async def load_extensions():
