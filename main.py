@@ -53,5 +53,13 @@ async def on_message_edit(before, after):
 async def load_extensions():
     await bot.load_extension("cogs.moderation")
 
-bot.loop.create_task(load_extensions())
-bot.run(TOKEN)
+async def load_extensions():
+    await bot.load_extension("cogs.moderation")
+
+async def main():
+    async with bot:
+        await load_extensions()
+        await bot.start(TOKEN)
+
+import asyncio
+asyncio.run(main())
