@@ -1,0 +1,57 @@
+import os
+import discord
+from discord.ext import commands
+from dotenv import load_dotenv
+
+load_dotenv()
+TOKEN = os.getenv("DISCORD_TOKEN")
+
+intents = discord.Intents.default()
+intents.members = True
+intents.message_content = True
+
+bot = commands.Bot(command_prefix="!", intents=intents)
+
+@bot.event
+async def on_ready():
+    print(f"{bot.user} is online and enforcing justice.")
+    try:
+        synced = await bot.tree.sync()
+        print(f"Synced {len(synced)} command(s).")
+    except Exception as e:
+        print(f"Sync failed: {e}")
+
+@bot.tree.error
+async def on_app_command_error(interaction: discord.Interaction, error: discord.app_commands.AppCommandError):
+    if isinstance(error, discord.app_commands.MissingPermissions):
+        await interaction.response.send_message("🚫 You don’t have permission to use this command.", ephemeral=True)
+    elif isinstance(error, discord.app_commands.CheckFailure):
+        await interaction.response.send_message("🚫 Only mods/admins can use this command.", ephemeral=True)
+    else:
+        await interaction.response.send_message("❌ Something went wrong.", ephemeral=True)
+        raise error
+
+@bot.event
+async def on_message_delete(message):
+    if message.author.bot:
+        return
+    log_channel = discord.utils.get(message.guild.text_channels, name="mod-logs")
+    if log_channel:
+        await log_channel.send(f"🗑️ **Message deleted in {message.channel.mention}** by {message.author.mention}: `{message.content}`")
+
+@bot.event
+async def on_message_edit(before, after):
+    if before.author.bot or before.content == after.content:
+        return
+    log_channel = discord.utils.get(before.guild.text_channels, name="mod-logs")
+    if log_channel:
+        await log_channel.send(f"✏️ **Message edited in {before.channel.mention}** by {before.author.mention}:
+**Before:** {before.content}
+**After:** {after.content}")
+
+# Load cogs
+async def load_extensions():
+    await bot.load_extension("cogs.moderation")
+
+bot.loop.create_task(load_extensions())
+bot.run(TOKEN)
