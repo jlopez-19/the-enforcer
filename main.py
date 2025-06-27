@@ -47,6 +47,7 @@ async def on_message_edit(before, after):
     if log_channel:
         await log_channel.send(
             f"✏️ **Message edited in {before.channel.mention}** by {before.author.mention}:
+"
             f"**Before:** {before.content}
 **After:** {after.content}"
         )
